@@ -1,54 +1,62 @@
-GitOps Syncer is a Python-based DevOps tool that automates Kubernetes configuration management.
-It scans a local or repository manifests/ directory, validates YAML manifests, computes a change fingerprint, and applies them to clusters using kubectl.
+# ☁️ GitOps Syncer — Kubernetes Manifest Automation Tool
 
-It is:
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg?logo=python&logoColor=white) ![kubectl](https://img.shields.io/badge/kubectl-required-326CE5.svg?logo=kubernetes) ![GitOps](https://img.shields.io/badge/GitOps-Automation-6C8EBF?logo=git) ![Docker](https://img.shields.io/badge/Docker-Optional-2496ED?logo=docker) ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?logo=github-actions)
 
-Safe by default — dry-run mode prevents unintended changes
+**GitOps Syncer** is a lightweight, dependency-free Python CLI that validates and applies Kubernetes manifests from a `manifests/` folder.  
+Safe-by-default (dry-run unless `--apply` is used), notebook-safe (works in Jupyter/Colab), and CI/CD friendly.
 
-Lightweight — only Python standard library, no dependencies
+---
 
-CI/CD-ready — works inside GitHub Actions, Jenkins, or GitLab pipelines
+## 🛠 Tech & Languages
 
-Cross-platform — runs on Linux, macOS, or Windows
+| Layer       | Tech                        | Notes |
+|-------------|-----------------------------|-------|
+| Language    | **Python 3.8+**             | Standard library only |
+| CLI         | **argparse / subprocess**   | Executes `kubectl` commands |
+| Hashing     | **hashlib**                 | Manifest fingerprinting (SHA-256) |
+| Concurrency | **concurrent.futures**      | ThreadPoolExecutor for parallel apply |
+| K8s Client  | **kubectl**                 | Required in PATH for apply operations |
+| CI/CD       | **GitHub Actions** (example)| Dry-run on PRs, apply on protected branches |
 
-🛠 Tech & Languages
-Layer	Tech	Notes
-Language	Python 3.8+	Standard library only
-CLI Tooling	argparse / subprocess	Used for command-line interface and shell calls
-Kubernetes	kubectl	Applies manifests, supports dry-run and context switching
-Container	Docker	Optional for packaging
-CI/CD	GitHub Actions	Example workflow provided below
-🌐 Architecture
-<p align="center"> <img src="https://raw.githubusercontent.com/your-org/gitops-syncer-assets/main/architecture.png" alt="GitOps Syncer Architecture" width="650" /> </p>
+---
+
+## 🌐 Architecture
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/your-org/gitops-syncer-assets/main/architecture.png" alt="GitOps Syncer Architecture" width="650" />
+</p>
 
 Flow:
+1. Developer places/commits YAML manifests into `manifests/`.  
+2. GitOps Syncer scans the directory for `.yml` / `.yaml` files.  
+3. Computes SHA-256 fingerprint for change detection.  
+4. Runs `kubectl apply -f <file>` for each manifest — default is `--dry-run=client`.  
+5. Aggregates results, prints deterministic summary.  
+6. Integrates with CI: run dry-run on PRs, run apply on protected merges.
 
-Developer commits YAML manifests under manifests/.
+---
 
-GitOps Syncer scans the folder for .yaml or .yml files.
+## 📦 Repository Structure
 
-Computes a SHA-256 hash to detect configuration changes.
-
-Executes kubectl apply -f <manifest> for each file.
-
-Runs in dry-run mode by default; add --apply for real deployments.
-
-Integrates easily with GitHub Actions or any CI/CD platform.
-
-📦 Repository Structure
 project-gitops-syncer/
-├─ gitops_syncer.py          # Main CLI tool
-├─ manifests/                # Kubernetes manifests
-│   └─ test-configmap.yaml   # Example file
-├─ Dockerfile                # Optional container
+├─ gitops_syncer.py # Single-file CLI (code + optional embedded README)
+├─ manifests/ # Put YAML manifests here
+│ └─ test-configmap.yaml
+├─ Dockerfile # Optional containerization
 ├─ .github/
-│   └─ workflows/
-│       └─ gitops-sync.yml   # Example CI/CD workflow
-└─ README.md                 # Documentation
+│ └─ workflows/
+│ └─ gitops-sync.yml # Example GitHub Actions workflow
+└─ README.md # This file
 
-▶️ Run in Google Colab or Terminal
-🧩 Setup
-!apt-get update -y && apt-get install -y kubectl
+yaml
+Copy code
+
+---
+
+## ▶️ Run (Terminal & Google Colab)
+
+### Create sample manifest
+```bash
 mkdir -p manifests
 cat > manifests/test-configmap.yaml <<'YAML'
 apiVersion: v1
@@ -58,37 +66,43 @@ metadata:
 data:
   foo: bar
 YAML
-
-🖥️ Terminal (CLI)
-python gitops_syncer.py --manifests=manifests --apply
-
-📘 Jupyter / Google Colab
-import gitops_syncer
-gitops_syncer.main(['--manifests', 'manifests', '--apply'])
-
-🔗 CLI Commands
-Command	Description
---manifests	Path to folder with YAML manifests
---context	Optional Kubernetes context
---apply	Apply manifests (otherwise dry-run)
---parallel	Number of threads for parallel apply (default: 4)
-💻 Examples
-
-Dry-run validation:
-
+Terminal (dry-run)
+bash
+Copy code
 python gitops_syncer.py --manifests=manifests
-
-
-Apply to the cluster:
-
+Terminal (apply)
+bash
+Copy code
 python gitops_syncer.py --manifests=manifests --apply
+Jupyter / Colab (programmatic)
+python
+Copy code
+import gitops_syncer
+gitops_syncer.main(['--manifests','manifests','--apply'])
+🔗 CLI Options
+Flag	Description
+--manifests	Path to the folder containing YAML manifests (default: manifests)
+--context	Kubernetes context to use (optional)
+--apply	Actually apply manifests; otherwise runs dry-run
+--parallel	Number of parallel apply threads (default: 4)
+--verbose	Extra logging for debugging
 
-
-Use a specific kubecontext:
-
+💻 Examples
+Validate manifests (dry-run)
+bash
+Copy code
+python gitops_syncer.py --manifests=manifests
+Apply manifests to cluster
+bash
+Copy code
+python gitops_syncer.py --manifests=manifests --apply
+Use a specific Kubernetes context
+bash
+Copy code
 python gitops_syncer.py --manifests=manifests --context=staging --apply
-
 🧪 Output Example
+bash
+Copy code
 Found 1 manifest(s). dry_run=False
 Manifests hash: 4a2c6e14eac3...
 $ kubectl apply -f manifests/test-configmap.yaml
@@ -97,51 +111,65 @@ configmap/test-cm created
 configmap/test-cm created
 Sync complete: 1 succeeded, 0 failed.
 [interactive] finished with return code: 0
-
-🧩 GitHub Actions (CI/CD Workflow)
+🧩 CI/CD Integration (GitHub Actions)
+yaml
+Copy code
 name: GitOps Sync
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
   push:
     branches: [ main ]
+
 jobs:
-  sync:
+  validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Install kubectl
-        run: sudo apt-get install -y kubectl
-      - name: Validate manifests (dry-run)
+        run: sudo apt-get update && sudo apt-get install -y kubectl
+      - name: Dry-run manifests
         run: python gitops_syncer.py --manifests=manifests
-      - name: Apply manifests (main branch only)
-        if: github.ref == 'refs/heads/main'
+
+  apply:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: [validate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install kubectl
+        run: sudo apt-get update && sudo apt-get install -y kubectl
+      - name: Apply manifests
         run: python gitops_syncer.py --manifests=manifests --apply
-
 🐳 Docker
-
-Build image:
-
+Dockerfile (example)
+dockerfile
+Copy code
+FROM python:3.10-slim
+WORKDIR /app
+COPY gitops_syncer.py /app/gitops_syncer.py
+COPY manifests/ /app/manifests/
+ENTRYPOINT ["python", "gitops_syncer.py"]
+Build & run
+bash
+Copy code
 docker build -t gitops-syncer:latest .
-
-
-Run container:
-
 docker run -v ~/.kube:/root/.kube -v $(pwd)/manifests:/app/manifests gitops-syncer:latest --apply
-
-☸️ Kubernetes Deployment
-
-Deploy GitOps Syncer as a scheduled job or CronJob in your cluster:
-
+☸️ Kubernetes Scheduling Example
+yaml
+Copy code
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: gitops-syncer
 spec:
-  schedule: "*/30 * * * *"
+  schedule: "0 * * * *"
   jobTemplate:
     spec:
       template:
@@ -149,7 +177,7 @@ spec:
           containers:
             - name: gitops-syncer
               image: ghcr.io/your-org/gitops-syncer:latest
-              args: ["--manifests=/data/manifests", "--apply"]
+              args: ["--manifests=/data/manifests","--apply"]
               volumeMounts:
                 - name: manifests
                   mountPath: /data/manifests
@@ -158,39 +186,49 @@ spec:
             - name: manifests
               configMap:
                 name: app-manifests
+📊 Metrics & Observability (suggested)
+Expose job metrics in CI (duration, failures) as build artifacts.
 
-📊 Metrics Integration
+Example metrics to collect:
 
-While GitOps Syncer itself is lightweight, you can wrap it in a CI/CD job that emits custom metrics such as:
+gitops_sync_runs_total
 
-Metric	Description	Example
-gitops_sync_runs_total	Number of GitOps sync executions	42
-gitops_sync_failures_total	Failed apply operations	2
-gitops_sync_last_duration_seconds	Duration of the last sync job	5.32
+gitops_sync_failures_total
 
-Prometheus scrape config snippet:
+gitops_sync_duration_seconds
 
-- job_name: "gitops-syncer"
-  static_configs:
-    - targets: ["gitops-syncer.default.svc.cluster.local:8080"]
+🐛 Troubleshooting
+Common issues
+No manifests found: ensure manifests/ contains .yml/.yaml files.
 
-🔐 Production Notes
+kubectl not found: install and ensure it’s in PATH.
 
-Always run dry-run first before applying live changes.
+Cluster access errors: verify ~/.kube/config or KUBECONFIG env var and RBAC.
 
-Limit cluster permissions using RBAC or a dedicated service account.
+Permission denied (file write): run in writable directory or adjust permissions.
 
-Protect your main branch with approvals before auto-apply.
+Quick checks
+bash
+Copy code
+python --version
+kubectl version --client --short
+kubectl get ns
+ls -la manifests
+🔒 Security Best Practices
+Run dry-run in PRs; require approvals for --apply.
 
-Optional: run inside a Kubernetes CronJob for recurring syncs.
+Use least-privilege service accounts in CI.
 
-👤 Author
+Do not store secrets in plain YAML.
 
-Siddharth Raut — Cloud & DevOps Engineer
-📧 Email: siduk2500@gmail.com
+Add *.kube/config, *.json to .gitignore if applicable.
 
-💼 LinkedIn: siddharth-raut-
+🤝 Contributing
+Fork the repo
 
-📝 License
+Create a feature branch git checkout -b feature/xyz
 
-MIT License © 2025 Siddharth Raut
+Commit changes git commit -m "Add xyz"
+
+Push and open a PR
+
