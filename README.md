@@ -18,7 +18,7 @@ Safe-by-default (dry-run unless `--apply` is used), notebook-safe (works in Jupy
 | K8s Client  | **kubectl**                 | Required in PATH for apply operations |
 | CI/CD       | **GitHub Actions** (example)| Dry-run on PRs, apply on protected branches |
 
----
+-----
 
 ## 🌐 Architecture
 
