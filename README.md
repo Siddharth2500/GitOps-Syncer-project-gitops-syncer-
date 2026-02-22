@@ -5,7 +5,7 @@
 **GitOps Syncer** is a lightweight, dependency-free Python CLI that validates and applies Kubernetes manifests from a `manifests/` folder.  
 Safe-by-default (dry-run unless `--apply` is used), notebook-safe (works in Jupyter/Colab), and CI/CD friendly.
 
---------
+---------
 
 ## 🛠 Tech & Languages
 
