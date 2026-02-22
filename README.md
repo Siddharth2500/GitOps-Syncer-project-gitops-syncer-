@@ -1,4 +1,4 @@
-# ☁️ GitOps Syncer — Kubernetes Manifest Automation Tool
+# ☁️ GitOps Syncer - Kubernetes Manifest Automation Tool
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg?logo=python&logoColor=white) ![kubectl](https://img.shields.io/badge/kubectl-required-326CE5.svg?logo=kubernetes) ![GitOps](https://img.shields.io/badge/GitOps-Automation-6C8EBF?logo=git) ![Docker](https://img.shields.io/badge/Docker-Optional-2496ED?logo=docker) ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?logo=github-actions)
 
