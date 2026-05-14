@@ -51,7 +51,7 @@ project-gitops-syncer/
 yaml
 Copy code
 
----------
+-----------
 
 ## ▶️ Run (Terminal & Google Colab)
 
