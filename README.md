@@ -34,7 +34,7 @@ Flow:
 5. Aggregates results, prints deterministic summary.  
 6. Integrates with CI: run dry-run on PRs, run apply on protected merges.
 
---------
+---------
 
 ## 📦 Repository Structure
 
