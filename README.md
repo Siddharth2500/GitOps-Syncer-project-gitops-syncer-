@@ -231,4 +231,5 @@ Create a feature branch git checkout -b feature/xyz
 Commit changes git commit -m "Add xyz"
 
 Push and open a PR
+---
 
